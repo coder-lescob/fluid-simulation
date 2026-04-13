@@ -26,7 +26,7 @@ int main(void) {
     }
     
     // creates a window
-    GLFWwindow *window = glfwCreateWindow(640, 480, "Hello, world !", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(480, 480, "Hello, squares !", NULL, NULL);
     GLFW_OBJ_CHECK(window);
 
     // makes the window's context the current one
