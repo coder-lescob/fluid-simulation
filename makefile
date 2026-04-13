@@ -17,3 +17,6 @@ build:
 
 run: build
 	@$(TARGET) $(ARGS)
+
+debug: build
+	@gdb $(TARGET)
