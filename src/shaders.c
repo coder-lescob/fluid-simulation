@@ -5,7 +5,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <stdbool.h>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 #include <GLFW/glfw3.h>
 
 char *file_read_all(char *path) {
