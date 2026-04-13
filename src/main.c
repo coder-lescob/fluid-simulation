@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <GLES3/gl32.h>
 #include <GLFW/glfw3.h>
 
 #include "shaders.h"
 
 float vertices[] = {
-     0.5f,  0.5f, 1.0f,
-     0.5f, -0.5f, 1.0f,
-    -0.5f, -0.5f, 1.0f,
-    -0.5f,  0.5f, 1.0f,
+     5.0f,  5.0f, 1.0f,
+     5.0f, -5.0f, 1.0f,
+    -5.0f, -5.0f, 1.0f,
+    -5.0f,  5.0f, 1.0f,
 };
 
 #define GLFW_OBJ_CHECK(OBJ) \
@@ -25,7 +26,7 @@ int main(void) {
     }
     
     // creates a window
-    GLFWwindow *window = glfwCreateWindow(480, 480, "Hello, squares !", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(480, 480, "fluid simulation", glfwGetPrimaryMonitor(), NULL);
     GLFW_OBJ_CHECK(window);
 
     // makes the window's context the current one
@@ -47,7 +48,6 @@ int main(void) {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -58,12 +58,14 @@ int main(void) {
         
         // rendering
         glfwGetWindowSize(window, &width, &height);
+
         glViewport(0, 0, width, height);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);
         glBindVertexArray(VAO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+        glUniform2f(glGetUniformLocation(program, "window_size"), (float)width / 100.0f, (float)height / 100.0f);
         glDrawArrays(GL_POINTS, 0, 4);
         glBindVertexArray(0);
 
@@ -72,12 +74,22 @@ int main(void) {
 
         // poll and process events
         glfwPollEvents();
+
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+            glfwSetWindowShouldClose(window, true);
+        }
+
+        vertices[1] -= 0.05f;
+        vertices[4] += 0.05f;
+        vertices[7] -= 0.05f;
+        vertices[10] += 0.05f; 
     }
 
     glDeleteBuffers(1, &VAO);
     glDeleteBuffers(1, &VBO);
 
     glDeleteProgram(program);
+    glfwDestroyWindow(window);
 
     glfwTerminate();
     return 0;
