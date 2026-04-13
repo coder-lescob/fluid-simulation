@@ -6,7 +6,6 @@
 #include "shaders.h"
 
 float vertices[] = {
-    // fill all the screen
      0.5f,  0.5f, 1.0f,
      0.5f, -0.5f, 1.0f,
     -0.5f, -0.5f, 1.0f,
