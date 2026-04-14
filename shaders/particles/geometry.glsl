@@ -10,7 +10,7 @@ uniform float particle_size;
 out vec2 relative_coords;
   
 void main() {
-    vec2 relative_square_size = vec2(particle_size, particle_size) / window_size;
+    vec2 relative_square_size = particle_size / window_size;
 
     vec2 corners[NUM_CORNERS] = {
         vec2(-1,  1),
