@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "shaders.h"
+#include "particle_rendering.h"
 
 float vertices[] = {
      5.0f,  5.0f, 1.0f,
@@ -32,25 +33,8 @@ int main(void) {
     // makes the window's context the current one
     glfwMakeContextCurrent(window);
 
-    GLuint program;
-    {
-        GLuint vertex = load_shader("shaders/vertex.glsl", GL_VERTEX_SHADER);
-        GLuint frag = load_shader("shaders/frag.glsl", GL_FRAGMENT_SHADER);
-        GLuint geometry = load_shader("shaders/geometry.glsl", GL_GEOMETRY_SHADER);
-        GLuint shaders[] = { vertex, frag, geometry };
-        program = create_program(shaders, sizeof(shaders));
-    }
-
-    GLuint VBO, VAO;
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &VAO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
+    struct ParticleRenderObject particle_renderer = 
+        create_particle_renderer();
 
     int width, height;
 
@@ -62,12 +46,8 @@ int main(void) {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(program);
-        glBindVertexArray(VAO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-        glUniform2f(glGetUniformLocation(program, "window_size"), (float)width / 100.0f, (float)height / 100.0f);
-        glDrawArrays(GL_POINTS, 0, 4);
-        glBindVertexArray(0);
+        // render the particles
+        render_particles(&particle_renderer, vertices, sizeof(vertices), height / (float)width);
 
         // swap the buffers
         glfwSwapBuffers(window);
@@ -85,10 +65,7 @@ int main(void) {
         vertices[10] += 0.05f; 
     }
 
-    glDeleteBuffers(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-
-    glDeleteProgram(program);
+    destroy_particle_renderer(&particle_renderer);
     glfwDestroyWindow(window);
 
     glfwTerminate();
