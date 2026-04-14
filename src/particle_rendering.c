@@ -11,7 +11,7 @@ struct ParticleRenderObject create_particle_renderer(void) {
         GLuint frag = load_shader("shaders/particles/frag.glsl", GL_FRAGMENT_SHADER);
         GLuint geometry = load_shader("shaders/particles/geometry.glsl", GL_GEOMETRY_SHADER);
         GLuint shaders[] = { vertex, frag, geometry };
-        program = create_program(shaders, sizeof(shaders));
+        program = create_program(shaders, sizeof(shaders) / sizeof(GLuint));
     }
 
     // create Vertex Buffer Object and Vertex Array Object
