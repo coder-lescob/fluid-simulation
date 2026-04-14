@@ -33,13 +33,14 @@ struct ParticleRenderObject create_particle_renderer(void) {
     };
 }
 
-void render_particles(struct ParticleRenderObject *particles_renderer, float *particles_positions, GLsizeiptr positions_size, float aspect_ratio) {
+void render_particles(struct ParticleRenderObject *particles_renderer, float *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio) {
     glUseProgram(particles_renderer->program);
     glBindVertexArray(particles_renderer->VAO);
     {
         glBufferData(GL_ARRAY_BUFFER, positions_size, particles_positions, GL_DYNAMIC_READ);
-        glUniform2f(glGetUniformLocation(particles_renderer->program, "window_size"), 10.0f, 10.0f * aspect_ratio);
-        glDrawArrays(GL_POINTS, 0, 4);
+        glUniform2f(glGetUniformLocation(particles_renderer->program, "window_size"), SCREEN_WIDTH_METERS, SCREEN_WIDTH_METERS * inv_aspect_ratio);
+        glUniform1f(glGetUniformLocation(particles_renderer->program, "particle_size"), PARTICLE_SIZE);
+        glDrawArrays(GL_POINTS, 0, positions_size / (3 * sizeof(float)));
     }
     glBindVertexArray(0);
 }
