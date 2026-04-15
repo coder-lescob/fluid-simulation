@@ -17,7 +17,7 @@ struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
     // create Vertex Buffer Object and Vertex Array Object
     GLuint VBO, VAO;
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &VAO);
+    glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -26,6 +26,8 @@ struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
     // allocate to the right shader buffer the VBO
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
 
     return (struct ParticleRenderObject) {
         .program = program,
@@ -37,6 +39,7 @@ struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
 void render_particles(struct ParticleRenderObject *particles_renderer, float *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio) {
     glUseProgram(particles_renderer->program);
     glBindVertexArray(particles_renderer->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, particles_renderer->VBO);
     {
         glBufferSubData(GL_ARRAY_BUFFER, 0, positions_size, particles_positions);
         glUniform2f(glGetUniformLocation(particles_renderer->program, "window_size"), SCREEN_WIDTH_METERS, SCREEN_WIDTH_METERS * inv_aspect_ratio);

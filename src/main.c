@@ -6,6 +6,7 @@
 
 #include "shaders.h"
 #include "particle_rendering.h"
+#include "text_rendering.h"
 
 float vertices[] = {
      5.0f,  5.0f, 1.0f,
@@ -36,6 +37,9 @@ int main(void) {
     struct ParticleRenderObject particle_renderer = 
         create_particle_renderer(4);
 
+    struct TextRenderObject text_renderer = 
+        create_text_renderer();
+
     int width, height;
 
     while (!glfwWindowShouldClose(window)) {
@@ -48,6 +52,7 @@ int main(void) {
 
         // render the particles
         render_particles(&particle_renderer, vertices, sizeof(vertices), height / (float)width);
+        render_text(&text_renderer, "Ok now it is fluid time.", 0, 0, width, height);
 
         // swap the buffers
         glfwSwapBuffers(window);
@@ -66,6 +71,7 @@ int main(void) {
     }
 
     destroy_particle_renderer(&particle_renderer);
+    destroy_text_renderer(&text_renderer);
     glfwDestroyWindow(window);
 
     glfwTerminate();
