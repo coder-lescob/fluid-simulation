@@ -2,7 +2,7 @@
 
 #include "shaders.h"
 
-struct ParticleRenderObject create_particle_renderer(void) {
+struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
 
     // loads and compile the shaders
     GLuint program;
@@ -21,6 +21,7 @@ struct ParticleRenderObject create_particle_renderer(void) {
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, num_particles * 3 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
     // allocate to the right shader buffer the VBO
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
@@ -37,7 +38,7 @@ void render_particles(struct ParticleRenderObject *particles_renderer, float *pa
     glUseProgram(particles_renderer->program);
     glBindVertexArray(particles_renderer->VAO);
     {
-        glBufferData(GL_ARRAY_BUFFER, positions_size, particles_positions, GL_DYNAMIC_READ);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, positions_size, particles_positions);
         glUniform2f(glGetUniformLocation(particles_renderer->program, "window_size"), SCREEN_WIDTH_METERS, SCREEN_WIDTH_METERS * inv_aspect_ratio);
         glUniform1f(glGetUniformLocation(particles_renderer->program, "particle_size"), PARTICLE_SIZE);
         glDrawArrays(GL_POINTS, 0, positions_size / (3 * sizeof(float)));

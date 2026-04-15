@@ -15,7 +15,7 @@ struct ParticleRenderObject {
 /**
  * creates then returns a particle render object for particle rendering
  */
-struct ParticleRenderObject create_particle_renderer(void);
+struct ParticleRenderObject create_particle_renderer(size_t num_paticles);
 
 /**
  * renders the particles from a buffer

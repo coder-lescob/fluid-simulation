@@ -34,7 +34,7 @@ int main(void) {
     glfwMakeContextCurrent(window);
 
     struct ParticleRenderObject particle_renderer = 
-        create_particle_renderer();
+        create_particle_renderer(4);
 
     int width, height;
 
