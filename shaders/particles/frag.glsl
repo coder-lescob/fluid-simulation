@@ -11,6 +11,6 @@ void main() {
         discard;
     }
 
-    // purple
+    // blue
     FragColor = vec4(0.0, 0.55, 0.75, 0.0);
 } 
