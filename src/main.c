@@ -8,7 +8,7 @@
 #include "particle_rendering.h"
 #include "text_rendering.h"
 
-float vertices[] = {
+float particles_positions[] = {
      5.0f,  5.0f, 1.0f,
      5.0f, -5.0f, 1.0f,
     -5.0f, -5.0f, 1.0f,
@@ -51,7 +51,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // render the particles
-        render_particles(&particle_renderer, vertices, sizeof(vertices), height / (float)width);
+        render_particles(&particle_renderer, particles_positions, sizeof(particles_positions), height / (float)width);
         render_text(&text_renderer, "Ok now it is fluid time.", 0, 0, width, height);
 
         // swap the buffers
@@ -64,10 +64,10 @@ int main(void) {
             glfwSetWindowShouldClose(window, true);
         }
 
-        vertices[1] -= 0.05f;
-        vertices[4] += 0.05f;
-        vertices[7] -= 0.05f;
-        vertices[10] += 0.05f; 
+        particles_positions[1] -= 0.05f;
+        particles_positions[4] += 0.05f;
+        particles_positions[7] -= 0.05f;
+        particles_positions[10] += 0.05f; 
     }
 
     destroy_particle_renderer(&particle_renderer);
