@@ -55,8 +55,12 @@ int main(void) {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        char fps_text[64] = "";
+        snprintf(fps_text, 64, "FRAME: %d ms", (int)(delta_time * 1000.0f));
+
         // render the particles
         render_particles(&particle_renderer, particles_positions, sizeof(particles_positions), height / (float)width);
+        render_text(&text_renderer, fps_text, -width / 3.0f, height / 3.14f, width, height);
 
         // swap the buffers
         glfwSwapBuffers(window);
