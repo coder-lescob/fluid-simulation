@@ -8,11 +8,14 @@
 #include "particle_rendering.h"
 #include "text_rendering.h"
 
-float particles_positions[] = {
-     5.0f,  5.0f, 1.0f,
-     5.0f, -5.0f, 1.0f,
-    -5.0f, -5.0f, 1.0f,
-    -5.0f,  5.0f, 1.0f,
+#define NUM_PARTICLES 1
+
+float particles_positions[NUM_PARTICLES * 2] = {
+    0.0f, 0.0f,
+};
+
+float particles_velocities[NUM_PARTICLES * 2] = {
+    0.0f, 0.0f,
 };
 
 #define GLFW_OBJ_CHECK(OBJ) \
@@ -35,12 +38,14 @@ int main(void) {
     glfwMakeContextCurrent(window);
 
     struct ParticleRenderObject particle_renderer = 
-        create_particle_renderer(4);
+        create_particle_renderer(NUM_PARTICLES);
 
     struct TextRenderObject text_renderer = 
         create_text_renderer();
 
     int width, height;
+
+    double last_time = glfwGetTime(), delta_time = 0.0;
 
     while (!glfwWindowShouldClose(window)) {
         
@@ -52,7 +57,6 @@ int main(void) {
 
         // render the particles
         render_particles(&particle_renderer, particles_positions, sizeof(particles_positions), height / (float)width);
-        render_text(&text_renderer, "Ok now it is fluid time.", 0, 0, width, height);
 
         // swap the buffers
         glfwSwapBuffers(window);
@@ -64,10 +68,12 @@ int main(void) {
             glfwSetWindowShouldClose(window, true);
         }
 
-        particles_positions[1] -= 0.05f;
-        particles_positions[4] += 0.05f;
-        particles_positions[7] -= 0.05f;
-        particles_positions[10] += 0.05f; 
+        particles_velocities[1] -= 10.0 * delta_time;
+        particles_positions[1] += particles_velocities[1] * delta_time;
+
+        // time step computation
+        delta_time = glfwGetTime() - last_time;
+        last_time = glfwGetTime();
     }
 
     destroy_particle_renderer(&particle_renderer);

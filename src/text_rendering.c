@@ -72,7 +72,7 @@ void render_text(struct TextRenderObject *text_renderer, char *text, float x, fl
 
 void destroy_text_renderer(struct TextRenderObject *text_renderer) {
     glDeleteBuffers(1, &text_renderer->VAO);
-    glDeleteBuffers(1, &text_renderer->VBO);
+    glDeleteVertexArrays(1, &text_renderer->VBO);
 
     glDeleteProgram(text_renderer->program);
 }
