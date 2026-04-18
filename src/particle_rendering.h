@@ -3,6 +3,7 @@
 
 #include <GLES3/gl32.h>
 #include <GLFW/glfw3.h>
+#include "fluid.h"
 
 #define SCREEN_WIDTH_METERS 10.0f
 #define PARTICLE_SIZE 0.05f
@@ -21,7 +22,7 @@ struct ParticleRenderObject create_particle_renderer(size_t num_paticles);
  * renders the particles from a buffer
  * @note the positions_size is size in BYTES of the positions buffer
  */
-void render_particles(struct ParticleRenderObject *particles_renderer, float *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio);
+void render_particles(struct ParticleRenderObject *particles_renderer, float2 *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio);
 
 /**
  * destroys all buffers and program of the particles renderer

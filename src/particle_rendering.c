@@ -1,6 +1,7 @@
 #include "particle_rendering.h"
 
 #include "shaders.h"
+#include "fluid.h"
 
 struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
 
@@ -20,13 +21,14 @@ struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, num_particles * 2 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, num_particles * sizeof(float2), NULL, GL_DYNAMIC_DRAW);
 
-    // allocate to the right shader buffer the VBO
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
+        // allocate to the right shader buffer the VBO
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float2), (void *)0);
+        glEnableVertexAttribArray(0);
+    }
     glBindVertexArray(0);
 
     return (struct ParticleRenderObject) {
@@ -36,7 +38,7 @@ struct ParticleRenderObject create_particle_renderer(size_t num_particles) {
     };
 }
 
-void render_particles(struct ParticleRenderObject *particles_renderer, float *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio) {
+void render_particles(struct ParticleRenderObject *particles_renderer, float2 *particles_positions, GLsizeiptr positions_size, float inv_aspect_ratio) {
     glUseProgram(particles_renderer->program);
     glBindVertexArray(particles_renderer->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, particles_renderer->VBO);

@@ -19,16 +19,17 @@ struct TextRenderObject create_text_renderer(void) {
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
-    // allocate to the right shader buffer the VBO
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
+        // allocate to the right shader buffer the VBO
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    }
     glBindVertexArray(0);
 
     return (struct TextRenderObject) {
@@ -54,21 +55,22 @@ void render_text(struct TextRenderObject *text_renderer, char *text, float x, fl
 
     glUseProgram(text_renderer->program);
     glBindVertexArray(text_renderer->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, text_renderer->VBO);
-    glUniform2f(glGetUniformLocation(text_renderer->program, "window_size"), window_width / 3.0f, window_height / 3.0f);
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, text_renderer->VBO);
+        glUniform2f(glGetUniformLocation(text_renderer->program, "window_size"), window_width / 3.0f, window_height / 3.0f);
 
-    for (char *c = text; *c != 0; c++ /* ;) */) {
+        for (char *c = text; *c != 0; c++ /* ;) */) {
 
-        // render only visible characters
-        if (*c >= '!' && *c <= '~') {
-            glUniform1i(glGetUniformLocation(text_renderer->program, "char"), *c);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(char_box), char_box);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            // render only visible characters
+            if (*c >= '!' && *c <= '~') {
+                glUniform1i(glGetUniformLocation(text_renderer->program, "char"), *c);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(char_box), char_box);
+                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            }
+
+            move_char_box(char_box);
         }
-
-        move_char_box(char_box);
     }
-
     glBindVertexArray(0);
 }
 

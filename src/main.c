@@ -7,15 +7,14 @@
 #include "shaders.h"
 #include "particle_rendering.h"
 #include "text_rendering.h"
+#include "fluid.h"
 
-#define NUM_PARTICLES 1
-
-float particles_positions[NUM_PARTICLES * 2] = {
-    0.0f, 0.0f,
+float2 particles_positions[NUM_PARTICLES] = {
+    {0.0f, 0.0f},
 };
 
-float particles_velocities[NUM_PARTICLES * 2] = {
-    0.0f, 0.0f,
+float2 particles_velocities[NUM_PARTICLES] = {
+    {0.0f, 0.0f},
 };
 
 #define GLFW_OBJ_CHECK(OBJ) \
@@ -72,8 +71,8 @@ int main(void) {
             glfwSetWindowShouldClose(window, true);
         }
 
-        particles_velocities[1] -= 10.0 * delta_time;
-        particles_positions[1] += particles_velocities[1] * delta_time;
+        particles_velocities[0][Y] -= 10.0 * delta_time;
+        particles_positions[0][Y] += particles_velocities[0][Y] * delta_time;
 
         // time step computation
         delta_time = glfwGetTime() - last_time;
