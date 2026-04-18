@@ -9,14 +9,6 @@
 #include "text_rendering.h"
 #include "fluid.h"
 
-float2 particles_positions[NUM_PARTICLES] = {
-    {0.0f, 0.0f},
-};
-
-float2 particles_velocities[NUM_PARTICLES] = {
-    {0.0f, 0.0f},
-};
-
 #define GLFW_OBJ_CHECK(OBJ) \
     if (OBJ == NULL) {      \
         glfwTerminate();    \
@@ -42,9 +34,11 @@ int main(void) {
     struct TextRenderObject text_renderer = 
         create_text_renderer();
 
+    struct Fluid fluid = create_fluid_simulation();
+
     int width, height;
 
-    double last_time = glfwGetTime(), delta_time = 0.0;
+    time_seconds_t last_time = glfwGetTime(), delta_time = 0.0;
 
     while (!glfwWindowShouldClose(window)) {
         
@@ -55,10 +49,10 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         char fps_text[64] = "";
-        snprintf(fps_text, 64, "FRAME: %d ms", (int)(delta_time * 1000.0f));
+        snprintf(fps_text, 63, "FRAME TIME: %d ms   FPS: %d", (int)(delta_time * 1000.0f), (int)(1 / delta_time));
 
         // render the particles
-        render_particles(&particle_renderer, particles_positions, sizeof(particles_positions), height / (float)width);
+        render_particles(&particle_renderer, fluid.positions, NUM_PARTICLES * sizeof(float2), height / (float)width);
         render_text(&text_renderer, fps_text, -width / 3.0f, height / 3.14f, width, height);
 
         // swap the buffers
@@ -71,8 +65,7 @@ int main(void) {
             glfwSetWindowShouldClose(window, true);
         }
 
-        particles_velocities[0][Y] -= 10.0 * delta_time;
-        particles_positions[0][Y] += particles_velocities[0][Y] * delta_time;
+        fluid_step(&fluid, delta_time);
 
         // time step computation
         delta_time = glfwGetTime() - last_time;
