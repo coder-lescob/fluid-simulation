@@ -57,7 +57,7 @@ void fluid_step(struct Fluid *fluid, time_seconds_t delta_time);
 /**
  * runs the simulation until running drops to false
  * this functions is typically run on another thread, so that is why it has the mutex lock
- * alsways returns NULL to make the compiler happy
+ * always returns NULL to make the compiler happy
  */
 void *simulation_loop(struct Simulation *simulation);
 
