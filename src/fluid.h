@@ -2,6 +2,7 @@
 #define FLUID_H
 
 #include <stdbool.h>
+#include <pthread.h>
 
 #define NUM_PARTICLES 1
 #define X 0
@@ -14,6 +15,21 @@ struct Fluid {
     // particles data
     float2 *positions;
     float2 *velocities;
+
+    // particle access across theads
+    pthread_mutex_t positions_lock;
+};
+
+struct Simulation {
+    struct Fluid *fluid;
+
+    pthread_mutex_t *running_lock;
+    bool *running;
+
+    // since it does not matter if this result is outdated 
+    // and that it is not overwritten by any other thread that the simulation thread 
+    // it does need a lock of his own
+    time_seconds_t last_time, delta_time;
 };
 
 /**
@@ -40,7 +56,9 @@ void fluid_step(struct Fluid *fluid, time_seconds_t delta_time);
 
 /**
  * runs the simulation until running drops to false
+ * this functions is typically run on another thread, so that is why it has the mutex lock
+ * alsways returns NULL to make the compiler happy
  */
-// void simulation_loop(struct Fluid *fluid, bool *running);
+void *simulation_loop(struct Simulation *simulation);
 
 #endif
