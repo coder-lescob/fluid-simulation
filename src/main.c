@@ -31,29 +31,27 @@ int main(void) {
 
     // makes the window's context the current one
     glfwMakeContextCurrent(window);
-
-    struct ParticleRenderObject particle_renderer = 
-        create_particle_renderer(NUM_PARTICLES);
-
-    struct TextRenderObject text_renderer = 
-        create_text_renderer();
-
-    struct Fluid fluid = create_fluid_simulation();
-
-    int width, height;
-
-    time_seconds_t last_time = glfwGetTime(), delta_time = 0.0;
-
+    
     // running flag
     pthread_mutex_t running_lock = PTHREAD_MUTEX_INITIALIZER;
     bool running = true;
+    
+    int width, height;
+    time_seconds_t last_time = glfwGetTime(), delta_time = 0.0;
 
-    // launch simulation thread
+    // create the renderers
+    struct ParticleRenderObject particle_renderer   = create_particle_renderer(NUM_PARTICLES);
+    struct TextRenderObject text_renderer           = create_text_renderer();
+
+    // create the simulation
+    struct Fluid fluid = create_fluid_simulation();
     struct Simulation sim = {
         .fluid          = &fluid,
         .running        = &running,
         .running_lock   = &running_lock,
     };
+
+    // launch simulation thread
     pthread_t simulation_thread;
     pthread_create(&simulation_thread, NULL, (THREAD_FUNC_T)(*simulation_loop), (void *)&sim);
 
@@ -67,10 +65,9 @@ int main(void) {
 
         // fps texts
         char fps_text_render[64] = { 0 };
-        snprintf(fps_text_render, 63, "RENDER THREAD:      FRAME TIME: %d ms   FPS: %d", (int)(delta_time * 1000.0f), (int)(1 / delta_time));
-
         char fps_text_sim[64] = { 0 };
-        snprintf(fps_text_sim, 63, "SIMULATION THREAD:  STEP TIME: %d us   SPS: %d", (int)(sim.delta_time * 1000000.0f), (int)(1 / sim.delta_time));
+        snprintf(fps_text_render, 63, "RENDER THREAD:      FRAME TIME: %d ms   FPS: %d", (int)(delta_time * 1000.0f       ), (int)(1 / delta_time    ));
+        snprintf(fps_text_sim, 63,    "SIMULATION THREAD:  STEP TIME: %d us   SPS: %d",  (int)(sim.delta_time * 1000000.0f), (int)(1 / sim.delta_time));
 
         pthread_mutex_lock(&fluid.positions_lock);
         {
