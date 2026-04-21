@@ -1,4 +1,5 @@
 #include "fluid.h"
+#include "particle_rendering.h"
 
 #include <stdlib.h>
 #include <pthread.h>
@@ -56,17 +57,17 @@ void fluid_step(struct Fluid *fluid, time_seconds_t delta_time) {
     {
         // simulation goes here
         for (int i = 0; i < NUM_PARTICLES; i++) {
-            fluid->velocities[i][Y] -= 10.0f * delta_time;
+            //fluid->velocities[i][Y] -= 10.0f * delta_time;
             fluid->positions [i][X] += fluid->velocities[i][X] * delta_time;
             fluid->positions [i][Y] += fluid->velocities[i][Y] * delta_time;
 
-            if (fabs(fluid->positions[i][Y]) > 5) {
-                fluid->positions[i][Y] = 5 * sign(fluid->positions[i][Y]);
+            if (fabs(fluid->positions[i][Y]) > SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE) {
+                fluid->positions[i][Y] = (SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE)* sign(fluid->positions[i][Y]);
                 fluid->velocities[i][Y] *= -0.7f;
             }
 
-            if (fabs(fluid->positions[i][X]) > 9) {
-                fluid->positions[i][X] = 9 * sign(fluid->positions[i][X]);
+            if (fabs(fluid->positions[i][X]) > SCREEN_WIDTH_METERS - PARTICLE_SIZE) {
+                fluid->positions[i][X] = (SCREEN_WIDTH_METERS - PARTICLE_SIZE) * sign(fluid->positions[i][X]);
                 fluid->velocities[i][X] *= -0.7f;
             }
         }

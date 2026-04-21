@@ -10,6 +10,7 @@
 #include "particle_rendering.h"
 #include "text_rendering.h"
 #include "fluid.h"
+#include "field_rendering.h"
 
 #define GLFW_OBJ_CHECK(OBJ) \
     if (OBJ == NULL) {      \
@@ -43,7 +44,8 @@ int main(void) {
 
     // create the renderers
     struct ParticleRenderObject particle_renderer   = create_particle_renderer(NUM_PARTICLES);
-    struct TextRenderObject text_renderer           = create_text_renderer();
+    struct TextRenderObject  text_renderer          = create_text_renderer();
+    struct FieldRenderObject field_renderer         = create_field_renderer();
 
     // create the simulation
     struct Fluid fluid = create_fluid_simulation();
@@ -71,11 +73,12 @@ int main(void) {
         snprintf(fps_text_render, 63, "RENDER THREAD:      FRAME TIME: %d ms   FPS: %d", (int)(delta_time * 1000.0f       ), (int)(1 / delta_time    ));
         snprintf(fps_text_sim, 63,    "SIMULATION THREAD:  STEP TIME: %d us   SPS: %d",  (int)(sim.delta_time * 1000000.0f), (int)(1 / sim.delta_time));
 
+        render_fluid_field(&field_renderer, &fluid, height / (float)width);
+
         pthread_mutex_trylock(&fluid.positions_lock);
         {
             // render the particles
             render_particles(&particle_renderer, fluid.positions, NUM_PARTICLES * sizeof(float2), height / (float)width);
-            
         }
         pthread_mutex_unlock(&fluid.positions_lock);
 
@@ -113,7 +116,8 @@ int main(void) {
 
     // destroy rendering objects
     destroy_particle_renderer(&particle_renderer);
-    destroy_text_renderer(&text_renderer);
+    destroy_text_renderer (&text_renderer);
+    destroy_field_renderer(&field_renderer);
     glfwDestroyWindow(window);
 
     // exit

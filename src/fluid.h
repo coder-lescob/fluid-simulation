@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define NUM_PARTICLES 1
+#define NUM_PARTICLES 100
 #define X 0
 #define Y 1
 
