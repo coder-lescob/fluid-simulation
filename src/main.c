@@ -24,6 +24,8 @@ int main(void) {
     if (!glfwInit()) {
         return -1;
     }
+
+    srand(time(NULL));
     
     // creates a window
     GLFWwindow *window = glfwCreateWindow(480, 480, "fluid simulation", glfwGetPrimaryMonitor(), NULL);
@@ -69,7 +71,7 @@ int main(void) {
         snprintf(fps_text_render, 63, "RENDER THREAD:      FRAME TIME: %d ms   FPS: %d", (int)(delta_time * 1000.0f       ), (int)(1 / delta_time    ));
         snprintf(fps_text_sim, 63,    "SIMULATION THREAD:  STEP TIME: %d us   SPS: %d",  (int)(sim.delta_time * 1000000.0f), (int)(1 / sim.delta_time));
 
-        pthread_mutex_lock(&fluid.positions_lock);
+        pthread_mutex_trylock(&fluid.positions_lock);
         {
             // render the particles
             render_particles(&particle_renderer, fluid.positions, NUM_PARTICLES * sizeof(float2), height / (float)width);
