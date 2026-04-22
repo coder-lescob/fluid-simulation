@@ -11,8 +11,11 @@
 
 struct Fluid create_fluid_simulation(void) {
     struct Fluid fluid = {
+        .num_particles  = NUM_PARTICLES,
+        .smoothing_radius = SMOOTHING_RADIUS,
         .positions      = calloc(NUM_PARTICLES, sizeof(float2)),
         .velocities     = calloc(NUM_PARTICLES, sizeof(float2)),
+        .densities      = calloc(NUM_PARTICLES, sizeof(float)),
         .positions_lock = PTHREAD_MUTEX_INITIALIZER,
     };
 
@@ -35,11 +38,12 @@ int sign(float x) {
 }
 
 void initialize_fluid(struct Fluid *fluid) {
-    for (int i = 0; i < NUM_PARTICLES; i++) {
-        fluid->positions[i][X] = random_float(-9.0f, 9.0f);
-        fluid->positions[i][Y] = random_float(-5.0f, 5.0f);
-        fluid->velocities[i][X] = random_float(-1.0f, 1.0f);
-        fluid->velocities[i][Y] = random_float(-1.f, 1.0f);
+    for (int i = 0; i < fluid->num_particles; i++) {
+        fluid->positions[i].x = random_float(-9.0f, 9.0f);
+        fluid->positions[i].y = random_float(-5.0f, 5.0f);
+        fluid->velocities[i].x = random_float(-1.0f, 1.0f);
+        fluid->velocities[i].y = random_float(-1.f, 1.0f);
+        fluid->densities[i] = 0;
     }
 }
 
@@ -52,23 +56,106 @@ void destroy_fluid(struct Fluid *fluid) {
     NO_MANGLE_FREE(fluid->velocities);
 }
 
+float smoothing_kernel(float dst, float smoothing_radius) {
+    if (dst < 0 || dst > smoothing_radius) return 0;
+
+    float volum_correction = 15 / (PI * powf(smoothing_radius, 6));
+    return volum_correction * powf(smoothing_radius - dst, 3);
+}
+
+float smoothing_kernel_derivative(float dst, float smoothing_radius) {
+    if (dst < 0 || dst > smoothing_radius) return 0;
+
+    float volum_correction = 15 / (PI * powf(smoothing_radius, 6));
+    return volum_correction * 3 * powf(smoothing_radius - dst, 2);
+}
+
+float magnitude(float2 v) {
+    return sqrtf(v.x * v.x + v.y * v.y);
+}
+
+#define SUB_VEC2(A, B) (float2){ (A).x - (B).x, (A).y - (B).y }
+
+float compute_density(struct Fluid *fluid, int particle_index) {
+
+    // TODO: optimize this to only look for particles in the smoothing radius
+
+    const float mass = 1;
+    float density = 0;
+
+    for (int i = 0; i < fluid->num_particles; i++) {
+        float dst = magnitude(SUB_VEC2(fluid->positions[i], fluid->positions[particle_index]));
+        density += mass * smoothing_kernel(dst, fluid->smoothing_radius);
+    }
+
+    return density;
+}
+
+float get_pressure(float density) {
+    #define TARGET_DENSITY 1.0f
+    #define PRESSURE_MULTIPLER 10.0f
+
+    float error = TARGET_DENSITY - density;
+    return PRESSURE_MULTIPLER * -error;
+}
+
+float get_shared_pressure(float density_a, float density_b) {
+    return (get_pressure(density_a) + get_pressure(density_b)) / 2.0f;
+}
+
+float2 compute_pressure_force(struct Fluid *fluid, int particle_index) {
+
+    const float mass = 1;
+    float2 pressure_force = (float2){ 0, 0 };
+
+    for (int i = 0; i < fluid->num_particles; i++) {
+        if (i == particle_index) continue;
+        float2 offset = SUB_VEC2(fluid->positions[i], fluid->positions[particle_index]);
+        float  dst    = magnitude(offset);
+        float2 dir = { 0, 0 };
+        if (dst == 0) {
+            // TODO: pick a random direction
+            continue;
+        }
+        else {
+            dir = (float2){ offset.x / dst, offset.y / dst };
+        }
+
+        pressure_force.x += mass * dir.x * get_shared_pressure(fluid->densities[i], fluid->densities[particle_index]) * smoothing_kernel_derivative(dst, fluid->smoothing_radius);
+        pressure_force.y += mass * dir.y * get_shared_pressure(fluid->densities[i], fluid->densities[particle_index]) * smoothing_kernel_derivative(dst, fluid->smoothing_radius);
+    }
+
+    return pressure_force;
+}
+
 void fluid_step(struct Fluid *fluid, time_seconds_t delta_time) {
     pthread_mutex_trylock(&fluid->positions_lock);
     {
+        for (int i = 0; i < NUM_PARTICLES; i++) {
+            fluid->densities[i] = compute_density(fluid, i);
+        }
+
         // simulation goes here
         for (int i = 0; i < NUM_PARTICLES; i++) {
-            //fluid->velocities[i][Y] -= 10.0f * delta_time;
-            fluid->positions [i][X] += fluid->velocities[i][X] * delta_time;
-            fluid->positions [i][Y] += fluid->velocities[i][Y] * delta_time;
+            float2 pressure_force = compute_pressure_force(fluid, i);
 
-            if (fabs(fluid->positions[i][Y]) > SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE) {
-                fluid->positions[i][Y] = (SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE)* sign(fluid->positions[i][Y]);
-                fluid->velocities[i][Y] *= -0.7f;
+            fluid->velocities[i].x += pressure_force.x / fluid->densities[i] * delta_time;
+            fluid->velocities[i].y += pressure_force.y / fluid->densities[i] * delta_time;
+        }
+
+            //fluid->velocities[i].y -= 10.0f * delta_time;
+        for (int i = 0; i < NUM_PARTICLES; i++) {
+            fluid->positions [i].x += fluid->velocities[i].x * delta_time;
+            fluid->positions [i].y += fluid->velocities[i].y * delta_time;
+
+            if (fabs(fluid->positions[i].y) > SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE) {
+                fluid->positions[i].y = (SCREEN_WIDTH_METERS * (9.0f / 16.0f) - PARTICLE_SIZE) * sign(fluid->positions[i].y);
+                fluid->velocities[i].y *= -1;//0.7f;
             }
 
-            if (fabs(fluid->positions[i][X]) > SCREEN_WIDTH_METERS - PARTICLE_SIZE) {
-                fluid->positions[i][X] = (SCREEN_WIDTH_METERS - PARTICLE_SIZE) * sign(fluid->positions[i][X]);
-                fluid->velocities[i][X] *= -0.7f;
+            if (fabs(fluid->positions[i].x) > SCREEN_WIDTH_METERS - PARTICLE_SIZE) {
+                fluid->positions[i].x = (SCREEN_WIDTH_METERS - PARTICLE_SIZE) * sign(fluid->positions[i].x);
+                fluid->velocities[i].x *= -1;//0.7f;
             }
         }
     }

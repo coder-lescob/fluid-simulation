@@ -2,7 +2,7 @@ CC := gcc
 
 DEBUG_FLAGS 	:= -g -Wall -Wextra -Wpedantic #-fsanitize=address
 RELEASE_FLAGS 	:= 
-LD_FLAGS 		:= $$(pkg-config --libs glfw3) $$(pkg-config --libs gl)
+LD_FLAGS 		:= $$(pkg-config --libs glfw3) $$(pkg-config --libs gl) -lm
 
 BUILD_DIR 	:= build
 SRC_DIR		:= src

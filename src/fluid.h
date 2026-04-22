@@ -5,16 +5,23 @@
 #include <pthread.h>
 
 #define NUM_PARTICLES 100
-#define X 0
-#define Y 1
+#define SMOOTHING_RADIUS 3
 
-typedef float float2[2];
+#define PI 3.14159
+
+typedef struct float2 {
+    float x, y;
+} float2;
 typedef double time_seconds_t;
 
 struct Fluid {
+    float num_particles;
+    float smoothing_radius;
+
     // particles data
     float2 *positions;
     float2 *velocities;
+    float  *densities;
 
     // particle access across theads
     pthread_mutex_t positions_lock;
