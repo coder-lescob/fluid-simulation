@@ -143,7 +143,6 @@ void fluid_step(struct Fluid *fluid, time_seconds_t delta_time) {
             fluid->velocities[i].y += pressure_force.y / fluid->densities[i] * delta_time;
         }
 
-            //fluid->velocities[i].y -= 10.0f * delta_time;
         for (int i = 0; i < NUM_PARTICLES; i++) {
             fluid->positions [i].x += fluid->velocities[i].x * delta_time;
             fluid->positions [i].y += fluid->velocities[i].y * delta_time;
